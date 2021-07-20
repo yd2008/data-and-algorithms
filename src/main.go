@@ -19,5 +19,10 @@ func main() {
 
 	//fmt.Println(bst.Height())
 	//fmt.Println(bst.IsComplete())
-	fmt.Println(completeBst.IsComplete())
+	//fmt.Println(completeBst.IsComplete())
+	//fmt.Println(completeBst.TestPrecursor(11))
+	completeBst.Remove(22)
+	completeBst.InorderTravel(func(value int) {
+		fmt.Println(value)
+	})
 }

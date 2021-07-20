@@ -249,8 +249,124 @@ func (bst *BinarySearchTree) Add(value int) {
 	bst.size++
 }
 
-func (bst *BinarySearchTree) Remove(value int) {
+func (bst *BinarySearchTree) remove(n *Node) {
+	if bst.size == 1 { // 只有一个根节点
+		bst.root = nil
+		bst.size = 0
+	}
 
+	// 度为2的情况
+	if n.HasTwoChild() { // 用前驱或者后置替换都可以
+		// 找到前驱并修改value
+		precursor := bst.precursor(n)
+		n.value = precursor.value
+		// 设置需要删除的节点
+		n = precursor
+	}
+
+	// 删除度为1的节点
+	if !n.IsLeaf() {
+		var child *Node
+		if n.left != nil {
+			child = n.left
+		} else {
+			child = n.right
+		}
+		// 改变指向
+		if n == n.parent.left {
+			n.parent.left = child
+		} else {
+			n.parent.right = child
+		}
+		child.parent = n.parent
+		return
+	}
+
+	// 最后一定是度为0的叶子结点
+	if n == n.parent.left {
+		n.parent.left = nil
+	} else {
+		n.parent.right = nil
+	}
+}
+
+// 获取一个节点的前驱节点
+func (bst *BinarySearchTree) precursor(n *Node) *Node {
+	// 如果左子节点不为空 则 left->right->right....
+	if n.left != nil {
+		node := n.left
+		for node.right != nil {
+			node = node.right
+		}
+
+		return node
+	}
+
+	// 如果左子节点为空并且parent不为空 则 parent->parent->parent... 直到第一次出现在右子节点
+	if n.left == nil && n.parent != nil {
+		pNode := n.parent
+		for pNode != nil {
+			if n == pNode.right {
+				return pNode
+			}
+
+			if n == pNode.left { // 继续往上找
+				n = pNode
+				pNode = pNode.parent
+			}
+		}
+	}
+
+	return nil
+}
+
+// 获取一个节点的后继节点
+func (bst *BinarySearchTree) successor(n *Node) *Node {
+	// 实现方法镜像前驱
+	if n.right != nil {
+		node := n.right
+		for node.left != nil {
+			node = node.left
+		}
+
+		return node
+	}
+
+	if n.right == nil && n.parent != nil {
+		pNode := n.parent
+		for pNode != nil {
+			if n == pNode.left {
+				return pNode
+			}
+
+			if n == pNode.right {
+				n = pNode
+				pNode = pNode.parent
+			}
+		}
+	}
+
+	return nil
+}
+
+// 通过value获取node
+func (bst *BinarySearchTree) node(value int) *Node {
+	node := bst.root
+	for node != nil {
+		if node.value > value { // 朝左找
+			node = node.left
+		} else if node.value < value { // 朝右找
+			node = node.right
+		} else { // 相等
+			return node
+		}
+	}
+
+	return nil
+}
+
+func (bst *BinarySearchTree) Remove(value int) {
+	bst.remove(bst.node(value))
 }
 
 func (bst *BinarySearchTree) Contains(value int) bool {
